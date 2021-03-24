@@ -29,10 +29,10 @@ It is also possible to use a different url than the default url for a search. Th
 # Command usage
 
 **%guildfamily set**<br>
-With this command it is possible to set the guild's default url. Enter a link as url in which the page name is replaced by `%ARTICLE%`.<br>
+This command allows to set the guild's default url. This url is used as a base to define the link by appending `%ARTICLE%`.<br>
 When searching, `%ARTICLE%` is replaced by the search term.
 
 At the english Wikipedia it would look like this: ```%guildfamily set https://en.wikipedia.org/wiki/%ARTICLE%```<br>
 For the English Minecraft Wiki it would look like this: ```%guildfamily set https://minecraft.fandom.com/wiki/%ARTICLE%```
 
-This principle can be applied to every wiki and almost all websites.
+This principle can be applied to almost every wiki or forum.
