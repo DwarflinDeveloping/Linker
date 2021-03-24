@@ -16,15 +16,13 @@ async def send_link(message):
     if "[[" not in message.content or message.author.bot:
         return
 
-    
-    s = re.findall("\\[\\[[^\\]]*\\]\\]", message.content)
+    items = re.findall("\\[\\[[^\\]]*\\]\\]", message.content)
     searches = []
     for item in items:
         item = re.sub('[\\[\\]]', '', item)
         item = re.sub('\\s', '_', item)
         searches += [item]
 
-    print(links)
     for search in searches:
         if ":" in search:
             search_family = search.split(":")[0].replace("$", "")
@@ -70,6 +68,28 @@ async def send_link(message):
     await message.channel.send(links)
     links = ""
     await bot.process_commands(message)
+
+
+@bot.command()
+async def admin(ctx, *args):
+    if args[0] == "guildfam":
+        if len(args) != 2:
+            # TODO Syntax Error
+            await ctx.send("SYNTAX ERROR!")
+        else:
+            from guild_family import get_family
+            from utils import ReturnCodes
+
+            get_family_process = get_family(ctx.guild.id)
+            if get_family_process == ReturnCodes.NOT_FOUND:
+                await ctx.send("This guild has no default url.")
+
+            else:
+                await ctx.send(f"The default url of this guild is:```{get_family_process}```")
+    if args[0] == "userfam":
+        if len(args) != 2:
+            # TODO Syntax Error
+            await ctx.send("SYNTAX ERROR!")
 
 
 @bot.event
@@ -126,7 +146,6 @@ async def op(ctx, *args):
             await ctx.send(f"The user `{args[1]}` already has operator rights.")
             return
         trusted_members += [args[1]]
-        print(trusted_members)
         await ctx.send(f"The operator rights have been added to this user:```{args[1]}```")
         return
 
@@ -134,14 +153,14 @@ async def op(ctx, *args):
 @bot.command()
 async def guildfamily(ctx, *args):
     if args[0] == "get" or args[0] == "query":
-        import os
-        if os.path.isfile(f"data/guild_familys/{str(ctx.guild.id)}.txt"):
-            guild_family_file = open(f"data/guild_familys/{str(ctx.guild.id)}.txt", "r")
-            await ctx.send(f"The default url of this guild is ```{guild_family_file.read()}```")
-            guild_family_file.close()
+        from utils import ReturnCodes
+        from guild_family import get_family
+
+        get_family_process = get_family(ctx.guild.id)
+        if get_family_process == ReturnCodes.NOT_FOUND:
+            await ctx.send("This guild has no default url.")
         else:
-            await ctx.send("This guild have no default url.")
-            return
+            await ctx.send(f"The default url of this guild is:```{get_family_process}```")
     elif not ctx.channel.permissions_for(ctx.author).manage_messages:
         await ctx.send("You are not permitted to do that!")
         return
@@ -159,10 +178,14 @@ async def guildfamily(ctx, *args):
 
             if confirmation == ReturnCodes.SUCCESS:
                 from guild_family import set_family
-                await set_family(ctx, *args)
-
+                set_process = set_family(ctx.guild.id, args[1])
+                if set_process == ReturnCodes.SUCCESS:
+                    await ctx.send(f"The default URL of the guild has been changed to```{args[1]}```")
+                elif set_process == ReturnCodes.OTHER_ERROR:
+                    await ctx.send("An unknown error has occurred.\n"
+                                   "If that happens every time, contact our support.")
             elif confirmation == ReturnCodes.CANCELLED:
-                await ctx.send("The process was successfully canceled.")
+                await ctx.send("The process was successfully cancelled.")
 
             elif confirmation == ReturnCodes.TIMEOUT_ERROR:
                 await confirmation.delete()
@@ -180,7 +203,7 @@ async def guildfamily(ctx, *args):
 
         if confirmation == ReturnCodes.SUCCESS:
             from guild_family import clear_family
-            clear_process = await clear_family(ctx.guild.id)
+            clear_process = clear_family(ctx.guild.id)
 
             if clear_process == ReturnCodes.SUCCESS:
                 await ctx.send("The url of this guild has been successfully reset.")
@@ -201,28 +224,71 @@ async def guildfamily(ctx, *args):
 
 @bot.command()
 async def userfamily(ctx, *args):
-    if args[0] == "set":
+    if args[0] == "get" or args[0] == "query":
+        from utils import ReturnCodes
+        from user_family import get_family
+
+        get_family_process = get_family(ctx.guild.id)
+        if get_family_process == ReturnCodes.NOT_FOUND:
+            await ctx.send("You have no default url.")
+        else:
+            await ctx.send(f"Your default url is:```{get_family_process}```")
+    elif args[0] == "set":
         if len(args) != 2:
             await ctx.send("Wrong use! Please use this:"
-                           "```!userfamily set <url>```")
+                           "```!guildfamily set <url>```")
         else:
-            from user_family import set_family
-            await set_family(ctx, *args)
-    elif args[0] == "get" or args[0] == "query":
-        import os
-        if os.path.isfile(f"data/user_familys/{str(ctx.author.id)}.txt"):
-            user_family_file = open(f"data/user_familys/{str(ctx.author.id)}.txt", "r")
-            await ctx.send(f"Your default url is ```{user_family_file.read()}```")
-            user_family_file.close()
-        else:
-            await ctx.send("You don't have a default url.")
+            from utils import get_confirmation, ReturnCodes
+
+            confirmation_message = await ctx.send("You are about to change the url of this guild.\n"
+                                                  "Do you want to continue?")
+
+            confirmation = await get_confirmation(confirmation_message, ctx.author, bot)
+
+            if confirmation == ReturnCodes.SUCCESS:
+                from user_family import set_family
+                set_process = set_family(ctx.author.id, args[1])
+                if set_process == ReturnCodes.SUCCESS:
+                    await ctx.send(f"Your default URL has been changed to```{args[1]}```")
+                elif set_process == ReturnCodes.OTHER_ERROR:
+                    await ctx.send("An unknown error has occurred.\n"
+                                   "If that happens every time, contact our support.")
+            elif confirmation == ReturnCodes.CANCELLED:
+                await ctx.send("The process was successfully cancelled.")
+
+            elif confirmation == ReturnCodes.TIMEOUT_ERROR:
+                await confirmation.delete()
+
+            elif confirmation == ReturnCodes.OTHER_ERROR:
+                await ctx.send("An unknown error has occurred.\n"
+                               "If that happens every time, contact our support.")
     elif args[0] == "clear" or args[0] == "delete":
-        import os
-        if os.path.isfile(f"data/user_familys/{str(ctx.author.id)}.txt"):
-            os.remove(f"data/user_familys/{str(ctx.author.id)}.txt")
-            await ctx.send("Your default URL has been deleted.")
-        else:
-            await ctx.send("You don't have a default url.")
+        from utils import get_confirmation, ReturnCodes
+
+        confirmation_message = await ctx.send("You are about to clear your default url.\n"
+                                              "Do you want to continue?")
+
+        confirmation = await get_confirmation(confirmation_message, ctx.author, bot)
+
+        if confirmation == ReturnCodes.SUCCESS:
+            from user_family import clear_family
+            clear_process = clear_family(ctx.author.id)
+
+            if clear_process == ReturnCodes.SUCCESS:
+                await ctx.send("Your default url has been successfully reset.")
+
+            elif clear_process == ReturnCodes.NOT_FOUND:
+                await ctx.send("You have no default url.")
+
+        elif confirmation == ReturnCodes.CANCELLED:
+            await ctx.send("The process was successfully cancelled.")
+
+        elif confirmation == ReturnCodes.TIMEOUT_ERROR:
+            await confirmation.delete()
+
+        elif confirmation == ReturnCodes.OTHER_ERROR:
+            await ctx.send("An unknown error has occurred.\n"
+                           "If that happens every time, contact our support.")
 
 
 bot.run("TOKEN")
