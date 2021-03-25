@@ -2,7 +2,7 @@ async def manage_request(ctx, *args, client):
     if args[0] == "get" or args[0] == "query":
         from utils import ReturnCodes
 
-        get_family_process = get_family(ctx.guild.id)
+        get_family_process = get_family(ctx.author.id)
         if get_family_process == ReturnCodes.NOT_FOUND:
             await ctx.send("You have no default url.")
         else:
@@ -10,11 +10,11 @@ async def manage_request(ctx, *args, client):
     elif args[0] == "set":
         if len(args) != 2:
             await ctx.send("Wrong use! Please use this:"
-                           "```!guildfamily set <url>```")
+                           "```%userfamily set <url>```")
         else:
             from utils import get_confirmation, ReturnCodes
 
-            confirmation_message = await ctx.send("You are about to change the url of this guild.\n"
+            confirmation_message = await ctx.send("You are about to change your default url.\n"
                                                   "Do you want to continue?")
 
             confirmation = await get_confirmation(confirmation_message, ctx.author, client)
@@ -23,6 +23,10 @@ async def manage_request(ctx, *args, client):
                 set_process = set_family(ctx.author.id, args[1])
                 if set_process == ReturnCodes.SUCCESS:
                     await ctx.send(f"Your default URL has been changed to```{args[1]}```")
+                elif set_process == ReturnCodes.VARIABLE_INVAILED:
+                    await ctx.send("You didn't use `%ARTICLE%` in the url.")
+                elif set_process == ReturnCodes.NO_CHANGES:
+                    await ctx.send("There are no changes in the url.")
                 elif set_process == ReturnCodes.OTHER_ERROR:
                     await ctx.send("An unknown error has occurred.\n"
                                    "If that happens every time, contact our support.")
@@ -64,13 +68,24 @@ async def manage_request(ctx, *args, client):
 
 
 def set_family(user_id, family_url):
-    from utils import ReturnCodes
+    from utils import get_family_template, ReturnCodes
+    template_search_process = get_family_template(family_url)
+    if template_search_process != ReturnCodes.NOT_FOUND:
+        family_url = template_search_process
+
+    if "%article%" not in family_url.lower():
+        return ReturnCodes.VARIABLE_INVAILED
+
+    user_family_file = open(f"data/user_familys/{str(user_id)}.txt", "r")
+    if family_url == user_family_file.read():
+        user_family_file.close()
+        return ReturnCodes.NO_CHANGES
+    user_family_file.close()
 
     try:
-        guild_family_file = open(f"data/user_familys/{str(user_id)}.txt", "w")
-        guild_family_file.write(family_url)
-        guild_family_file.close()
-
+        user_family_file = open(f"data/user_familys/{str(user_id)}.txt", "w")
+        user_family_file.write(family_url)
+        user_family_file.close()
         return ReturnCodes.SUCCESS
     except:
         return ReturnCodes.OTHER_ERROR
