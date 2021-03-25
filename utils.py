@@ -33,7 +33,7 @@ class Cancelled(Exception):
 def get_family_template(search):
     search = search.lower()
     if search.startswith("wikipedia-"):
-        return FamilyTemplates.WIKIPEDIA.replace("%WIKI%", search.replace("mcw-", ""))
+        return FamilyTemplates.WIKIPEDIA.replace("%WIKI%", search.replace("wikipedia-", ""))
 
     elif search.startswith("minecraft-"):
         return FamilyTemplates.MINECRAFT.replace("%WIKI%", search.replace("minecraft-", ""))
@@ -68,6 +68,7 @@ async def get_confirmation(confirmation_message, confirmation_user, client):
 
     try:
         await client.wait_for("reaction_add", timeout=10.0, check=check)
+        print("sucess")
         return ReturnCodes.SUCCESS
     except Cancelled:
         return ReturnCodes.CANCELLED
