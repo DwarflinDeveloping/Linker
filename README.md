@@ -55,7 +55,20 @@ It is necessary to include the variable `%ARTICLE%` in this URL. In case of a se
 If you do not want to build the URL yourself, you can also use the templates (see **Templates**).
 
 Here the principle will be explained based on the Emglish Minecraft Wiki:<br>.
-If you use a template, the command will look like this: `%guildfamily set minecraft-en`<br>.
-If you want to compose it yourself, however, like this: `%guildfamily set https://en.wikipedia.org/wiki/%ARTICLE`
+• If you use a template, the command will look like this: `%guildfamily set minecraft-en`<br>.
+• If you want to compose it yourself, however, like this: `%guildfamily set https://en.wikipedia.org/wiki/%ARTICLE`
+
+<img src="https://cdn.discordapp.com/attachments/805136929750122497/824701089164165130/Usage5.png" width="350px" />
 
 This principle can be applied to almost all Wikis, forums and most websites.
+
+**%userfamily set**<br>
+This command is practically the same as `%guildfamily` with the difference that the default url of the guild is not set, but that of the user. Templates can be used here as well.
+
+<img src="https://cdn.discordapp.com/attachments/805136929750122497/824704011550326805/Usage6.png" width="350px" />
+
+**%guildwords**<br>
+If this command is used, the custom words of the guild can be viewed and managed.<br>
+Custom words are words that output a custom url when searched.
+
+<img src="https://cdn.discordapp.com/attachments/805136929750122497/824709866681139250/Usage7.png" width="350px" />
