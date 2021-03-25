@@ -1,12 +1,11 @@
 def manage_search(message):
-    if "[[" not in message.content or message.author.bot:
-        return
     import re
     links = ""
-    items = re.findall("\\[\\[[^\\]]*\\]\\]", message.content)
+    items = re.findall("\\{[^\\}]*\\}", message.content)
+    print(items)
     searches = []
     for item in items:
-        item = re.sub('[\\[\\]]', '', item)
+        item = re.sub('[\\{\\}]', '', item)
         item = re.sub('\\s', '_', item)
         searches += [item]
 
