@@ -2,6 +2,7 @@ In other languages: [Deutsch](https://gist.github.com/DwarflinDeveloping/3dd8f1a
 
 # About Linker
 Linker is a bot programmed in [Python](https://www.python.org/) which makes it possible to send links in a very short time.
+And TechnikTim is cool!
 
 # General functions
 When a word is bracketed with "{" and "}", the bot generates a link completely automatically and sends it below the message.<br>
