@@ -40,12 +40,24 @@ Here are all of these templates listed:
 **%guildfamily**<br>
 `%guildfamily get` - Outputs the default url from this guild<br>
 `%guildfamily set <url>` - Sets the guild's default url to the given url<br>
-`%guildfamily clear` - Deletes the default url of the guild
+`%guildfamily clear` - Clears the default url of the guild
 
 **%userfamily**<br>
 `%userfamily get` - Outputs your default url<br>
 `%userfamily set <url>` - Sets your default url to the given url<br>
-`%userfamily clear` - Deletes your default url
+`%userfamily clear` - Clears your default url
+
+**%guildwords**<br>
+`%guildwords get` - Outputs the guilds custom words<br>
+`%guildwords set <word> <url>` - Adds the given word to the guilds custom words<br>
+`%guildwords rem <word>` - Removes the given word from the guilds custom words<br>
+`%guildwords clear` - Clears the guilds custom words
+
+**%userwords**<br>
+`%userwords get` - Outputs your custom words<br>
+`%userwords set <word> <url>` - Adds the given word to your custom words<br>
+`%userwords rem <word>` - Removes the given word from your custom words<br>
+`%userwords clear` - Clears your custom words
 
 # command use
 
@@ -72,3 +84,8 @@ If this command is used, the custom words of the guild can be viewed and managed
 Custom words are words that output a custom url when searched.
 
 <img src="https://cdn.discordapp.com/attachments/805136929750122497/824709866681139250/Usage7.png" width="350px" />
+
+**%userwords**<br>
+This command is practically the same as `%guildwords` with the difference that the default url of the guild is not set, but that of the user. Templates can be used here as well.
+
+<img src="https://cdn.discordapp.com/attachments/822481246097113118/824943264750501918/Usage8.png" width="350px" />
