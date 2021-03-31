@@ -1,4 +1,9 @@
 async def manage_request(ctx, *args, client):
+    if len(args) == 0:
+        from commands.help import send_userfamily_help
+        await send_userfamily_help(ctx, *args)
+        return
+    args = [arg.lower() for arg in args]
     if args[0] == "get" or args[0] == "query":
         from utils import ReturnCodes
 
@@ -69,18 +74,20 @@ async def manage_request(ctx, *args, client):
 
 def set_family(user_id, family_url):
     from utils import get_family_template, ReturnCodes
+    import os
+
     template_search_process = get_family_template(family_url)
     if template_search_process != ReturnCodes.NOT_FOUND:
         family_url = template_search_process
 
     if "%article%" not in family_url.lower():
         return ReturnCodes.VARIABLE_INVAILED
-
-    user_family_file = open(f"data/user_familys/{str(user_id)}.txt", "r")
-    if family_url == user_family_file.read():
+    if os.path.isfile(f"data/user_familys/{str(user_id)}.txt"):
+        user_family_file = open(f"data/user_familys/{str(user_id)}.txt", "r")
+        if family_url == user_family_file.read():
+            user_family_file.close()
+            return ReturnCodes.NO_CHANGES
         user_family_file.close()
-        return ReturnCodes.NO_CHANGES
-    user_family_file.close()
 
     try:
         user_family_file = open(f"data/user_familys/{str(user_id)}.txt", "w")
