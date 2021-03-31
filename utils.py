@@ -1,5 +1,3 @@
-import asyncio
-
 from enum import Enum
 
 
@@ -66,13 +64,13 @@ async def get_confirmation(confirmation_message, confirmation_user, client):
         if str(reaction.emoji) == "❌":
             raise Cancelled("CANCELL")
 
+    import asyncio
     try:
         await client.wait_for("reaction_add", timeout=10.0, check=check)
-        print("sucess")
         return ReturnCodes.SUCCESS
     except Cancelled:
         return ReturnCodes.CANCELLED
     except asyncio.TimeoutError:
-        return ReturnCodes.ERROR
+        return ReturnCodes.TIMEOUT_ERROR
     except:
         return ReturnCodes.OTHER_ERROR
