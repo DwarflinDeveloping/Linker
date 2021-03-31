@@ -37,25 +37,68 @@ async def manage_request(ctx, *args):
         clear_process = clear_custom_words(ctx.author.id)
         from utils import ReturnCodes
         if clear_process == ReturnCodes.NOT_FOUND:
-            await ctx.send("You have no custom words.")
+            from embeds import create_custom_embed
+            from discord import Colour
+            await ctx.send(
+                embed=create_custom_embed(
+                    embed_message=f"You have no custom words.",
+                    user=ctx.author,
+                    colour=Colour.dark_red()
+                )
+            )
         elif clear_process == ReturnCodes.OTHER_ERROR:
-            await ctx.send("An unknown error has occurred.\n"
-                           "If that happens every time, contact our support.")
+            from embeds import handle_error
+            await ctx.send(embed=handle_error(clear_process, ctx.author))
         elif clear_process == ReturnCodes.SUCCESS:
-            await ctx.send("Your custom words successfully cleared.")
-    elif args[0] == "remove":
+            from embeds import create_custom_embed
+            from discord import Colour
+            await ctx.send(
+                embed=create_custom_embed(
+                    embed_title="Sucess",
+                    embed_message=f"Your custom words successfully cleared.",
+                    user=ctx.author,
+                    colour=Colour.dark_green()
+                )
+            )
+    elif args[0] == "remove" or args[0] == "rem":
         add_process = remove_custom_word(ctx.author.id, args[1])
         from utils import ReturnCodes
         if add_process == ReturnCodes.SUCCESS:
-            await ctx.send(f"The word `{args[1]}` was successfully removed.")
+            from embeds import create_custom_embed
+            from discord import Colour
+            await ctx.send(
+                embed=create_custom_embed(
+                    embed_title="Sucess",
+                    embed_message=f"The word `{args[1]}` was successfully removed.",
+                    user=ctx.author,
+                    colour=Colour.dark_green()
+                )
+            )
         elif add_process == ReturnCodes.NOT_FOUND:
-            await ctx.send("You don't have this custom word.")
+            from embeds import create_custom_embed
+            from discord import Colour
+            await ctx.send(
+                embed=create_custom_embed(
+                    embed_message="You don't have this custom word.",
+                    user=ctx.author,
+                    colour=Colour.dark_red()
+                )
+            )
 
     elif args[0] == "add":
         add_process = create_custom_word(ctx.author.id, args[1], args[2])
         from utils import ReturnCodes
         if add_process == ReturnCodes.SUCCESS:
-            await ctx.send(f"The word `{args[1]}` was successfully set to the url `{args[2]}`")
+            from embeds import create_custom_embed
+            from discord import Colour
+            await ctx.send(
+                embed=create_custom_embed(
+                    embed_title="Sucess",
+                    embed_message=f"The word `{args[1]}` was successfully set to the url `{args[2]}`",
+                    user=ctx.author,
+                    colour=Colour.dark_green()
+                )
+            )
 
     else:
         from commands.help import send_userwords_help
