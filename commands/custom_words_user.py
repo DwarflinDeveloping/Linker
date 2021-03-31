@@ -1,15 +1,37 @@
 async def manage_request(ctx, *args):
+    args = [arg.lower() for arg in args]
     if len(args) == 0:
-        # TODO Syntax
-        pass
+        from commands.help import send_userwords_help
+        await send_userwords_help(ctx, *args)
 
-    if args[0] == "get":
+    elif args[0] == "list" or args[0] == "get":
         get_process = get_custom_words(ctx.author.id)
         from utils import ReturnCodes
         if get_process == ReturnCodes.NOT_FOUND:
-            await ctx.send("You have no custom words.")
+            from embeds import create_custom_embed
+            from discord import Colour
+            await ctx.send(
+                embed=create_custom_embed(
+                    embed_message="You have no custom words.",
+                    user=ctx.author,
+                    colour=Colour.dark_red()
+                )
+            )
         else:
-            await ctx.send(f"Your custom words are:```{get_process}```")
+            custom_words = ""
+            for verify_message in get_process:
+                custom_words += f"• {verify_message.replace('=', ' = ')}\n"
+
+            from embeds import create_custom_embed
+            from discord import Colour
+            await ctx.send(
+                embed=create_custom_embed(
+                    embed_title="Custom words",
+                    embed_message=f"Your custom words are:```{custom_words}```",
+                    user=ctx.author,
+                    colour=Colour.blue()
+                )
+            )
 
     elif args[0] == "clear":
         clear_process = clear_custom_words(ctx.author.id)
@@ -21,7 +43,6 @@ async def manage_request(ctx, *args):
                            "If that happens every time, contact our support.")
         elif clear_process == ReturnCodes.SUCCESS:
             await ctx.send("Your custom words successfully cleared.")
-
     elif args[0] == "remove":
         add_process = remove_custom_word(ctx.author.id, args[1])
         from utils import ReturnCodes
@@ -35,6 +56,10 @@ async def manage_request(ctx, *args):
         from utils import ReturnCodes
         if add_process == ReturnCodes.SUCCESS:
             await ctx.send(f"The word `{args[1]}` was successfully set to the url `{args[2]}`")
+
+    else:
+        from commands.help import send_userwords_help
+        await send_userwords_help(ctx, *args)
 
 
 def create_custom_word(user_id, custom_word, url):
@@ -80,16 +105,23 @@ def remove_custom_word(user_id, custom_word):
 
 def get_custom_words(user_id):
     import os
-    import json
     from utils import ReturnCodes
-
-    if os.path.isfile(f"data/custom_words/users/{user_id}.json"):
-        with open(f"data/custom_words/users/{user_id}.json", "r") as json_file:
-            custom_words = json.load(json_file)
-        json_file.close()
-        return json.dumps(custom_words, indent=4)
-    else:
+    if not os.path.isfile(f"data/custom_words/users/{user_id}.json"):
         return ReturnCodes.NOT_FOUND
+    custom_words_file = open(f"data/custom_words/users/{user_id}.json")
+    import json
+    custom_words_json = json.loads(custom_words_file.read())
+    custom_words_file.close()
+    custom_words_keys = custom_words_json.keys()
+    custom_words = []
+
+    if len(custom_words_keys) == 0:
+        return ReturnCodes.NOT_FOUND
+
+    for key in custom_words_keys:
+        custom_words += [f"{key}={custom_words_json[key]}"]
+
+    return custom_words
 
 
 def clear_custom_words(user_id):
