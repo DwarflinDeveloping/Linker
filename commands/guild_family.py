@@ -1,4 +1,5 @@
 async def manage_request(ctx, *args, client):
+    args = [arg.lower() for arg in args]
     if args[0] == "get" or args[0] == "query":
         from utils import ReturnCodes
 
@@ -79,7 +80,6 @@ def set_family(guild_id, family_url):
     try:
         from utils import get_family_template, ReturnCodes
         template_search_process = get_family_template(family_url)
-        print(template_search_process)
         if template_search_process != ReturnCodes.NOT_FOUND:
             family_url = template_search_process
 
