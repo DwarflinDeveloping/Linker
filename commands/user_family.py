@@ -1,9 +1,10 @@
 async def manage_request(ctx, *args, client):
+    args = [arg.lower() for arg in args]
     if len(args) == 0:
         from commands.help import send_userfamily_help
         await send_userfamily_help(ctx, *args)
         return
-    args = [arg.lower() for arg in args]
+
     if args[0] == "get" or args[0] == "query":
         from utils import ReturnCodes
 
@@ -11,44 +12,92 @@ async def manage_request(ctx, *args, client):
         if get_family_process == ReturnCodes.NOT_FOUND:
             await ctx.send("You have no default url.")
         else:
-            await ctx.send(f"Your default url is:```{get_family_process}```")
+            from embeds import create_custom_embed
+            from discord import Colour
+            await ctx.send(
+                embed=create_custom_embed(
+                    embed_title="Default URL",
+                    embed_message=f"Your default url is:```{get_family_process}```",
+                    user=ctx.author,
+                    colour=Colour.blue()
+                )
+            )
+
     elif args[0] == "set":
         if len(args) != 2:
-            await ctx.send("Wrong use! Please use this:"
-                           "```%userfamily set <url>```")
+            from commands.help import send_userfamily_help
+            await send_userfamily_help(ctx, *args)
         else:
             from utils import get_confirmation, ReturnCodes
-
-            confirmation_message = await ctx.send("You are about to change your default url.\n"
-                                                  "Do you want to continue?")
+            from embeds import create_custom_embed
+            from discord import Colour
+            confirmation_message = await ctx.send(
+                embed=create_custom_embed(
+                    embed_title=
+                    "Confirmation",
+                    embed_message=
+                    "You are about to change your default url.\n"
+                    "Do you want to continue?",
+                    user=ctx.author,
+                    colour=Colour.blue()
+                )
+            )
 
             confirmation = await get_confirmation(confirmation_message, ctx.author, client)
-
             if confirmation == ReturnCodes.SUCCESS:
                 set_process = set_family(ctx.author.id, args[1])
                 if set_process == ReturnCodes.SUCCESS:
-                    await ctx.send(f"Your default URL has been changed to```{args[1]}```")
+                    await ctx.send(
+                        embed=create_custom_embed(
+                            embed_title="Success",
+                            embed_message=f"Your default URL has been changed to```{args[1]}```",
+                            user=ctx.author,
+                            colour=Colour.dark_green()
+                        )
+                    )
                 elif set_process == ReturnCodes.VARIABLE_INVAILED:
-                    await ctx.send("You didn't use `%ARTICLE%` in the url.")
+                    await ctx.send(
+                        embed=create_custom_embed(
+                            embed_message="You didn't use `%ARTICLE%` in the url.",
+                            user=ctx.author,
+                            colour=Colour.dark_red()
+                        )
+                    )
                 elif set_process == ReturnCodes.NO_CHANGES:
-                    await ctx.send("There are no changes in the url.")
+                    await ctx.send(
+                        embed=create_custom_embed(
+                            embed_message="There are no changes in the url.",
+                            user=ctx.author,
+                            colour=Colour.dark_red()
+                        )
+                    )
                 elif set_process == ReturnCodes.OTHER_ERROR:
-                    await ctx.send("An unknown error has occurred.\n"
-                                   "If that happens every time, contact our support.")
+                    from embeds import handle_error
+                    await ctx.send(embed=handle_error(set_process, ctx.author))
             elif confirmation == ReturnCodes.CANCELLED:
-                await ctx.send("The process was successfully cancelled.")
+                await confirmation_message.delete()
 
             elif confirmation == ReturnCodes.TIMEOUT_ERROR:
                 await confirmation.delete()
 
             elif confirmation == ReturnCodes.OTHER_ERROR:
-                await ctx.send("An unknown error has occurred.\n"
-                               "If that happens every time, contact our support.")
+                from embeds import handle_error
+                await ctx.send(embed=handle_error(confirmation, ctx.author))
     elif args[0] == "clear" or args[0] == "delete":
         from utils import get_confirmation, ReturnCodes
-
-        confirmation_message = await ctx.send("You are about to clear your default url.\n"
-                                              "Do you want to continue?")
+        from embeds import create_custom_embed
+        from discord import Colour
+        confirmation_message = await ctx.send(
+            embed=create_custom_embed(
+                embed_title=
+                "Confirmation",
+                embed_message=
+                "You are about to clear your default url.\n"
+                "Do you want to continue?",
+                user=ctx.author,
+                colour=Colour.blue()
+            )
+        )
 
         confirmation = await get_confirmation(confirmation_message, ctx.author, client)
 
@@ -56,20 +105,33 @@ async def manage_request(ctx, *args, client):
             clear_process = clear_family(ctx.author.id)
 
             if clear_process == ReturnCodes.SUCCESS:
-                await ctx.send("Your default url has been successfully reset.")
+                await ctx.send(
+                    embed=create_custom_embed(
+                        embed_title="Success",
+                        embed_message=f"Your default url has been successfully reset.",
+                        user=ctx.author,
+                        colour=Colour.dark_green()
+                    )
+                )
 
             elif clear_process == ReturnCodes.NOT_FOUND:
-                await ctx.send("You have no default url.")
+                await ctx.send(
+                    embed=create_custom_embed(
+                        embed_message="You have no default url.",
+                        user=ctx.author,
+                        colour=Colour.dark_red()
+                    )
+                )
 
-        elif confirmation == ReturnCodes.CANCELLED:
-            await ctx.send("The process was successfully cancelled.")
-
-        elif confirmation == ReturnCodes.TIMEOUT_ERROR:
-            await confirmation.delete()
+        elif confirmation == ReturnCodes.CANCELLED or confirmation == ReturnCodes.TIMEOUT_ERROR:
+            await confirmation_message.delete()
 
         elif confirmation == ReturnCodes.OTHER_ERROR:
-            await ctx.send("An unknown error has occurred.\n"
-                           "If that happens every time, contact our support.")
+            from embeds import handle_error
+            await ctx.send(embed=handle_error(confirmation, ctx.author))
+    else:
+        from commands.help import send_userfamily_help
+        await send_userfamily_help(ctx, *args)
 
 
 def set_family(user_id, family_url):
