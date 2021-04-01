@@ -10,14 +10,22 @@ async def manage_request(ctx, *args, client):
 
         get_family_process = get_family(ctx.author.id)
         if get_family_process == ReturnCodes.NOT_FOUND:
-            await ctx.send("You have no default url.")
+            from embeds import create_custom_embed
+            from discord import Colour
+            await ctx.send(
+                embed=create_custom_embed(
+                    embed_message="You have no Default URL.",
+                    user=ctx.author,
+                    colour=Colour.dark_red()
+                )
+            )
         else:
             from embeds import create_custom_embed
             from discord import Colour
             await ctx.send(
                 embed=create_custom_embed(
                     embed_title="Default URL",
-                    embed_message=f"Your default url is:```{get_family_process}```",
+                    embed_message=f"Your Default URL is:```{get_family_process}```",
                     user=ctx.author,
                     colour=Colour.blue()
                 )
@@ -36,7 +44,7 @@ async def manage_request(ctx, *args, client):
                     embed_title=
                     "Confirmation",
                     embed_message=
-                    "You are about to change your default url.\n"
+                    "You are about to change your Default URL.\n"
                     "Do you want to continue?",
                     user=ctx.author,
                     colour=Colour.blue()
@@ -50,7 +58,7 @@ async def manage_request(ctx, *args, client):
                     await ctx.send(
                         embed=create_custom_embed(
                             embed_title="Success",
-                            embed_message=f"Your default URL has been changed to```{args[1]}```",
+                            embed_message=f"Your Default URL has been changed to```{args[1]}```",
                             user=ctx.author,
                             colour=Colour.dark_green()
                         )
@@ -58,7 +66,7 @@ async def manage_request(ctx, *args, client):
                 elif set_process == ReturnCodes.VARIABLE_INVAILED:
                     await ctx.send(
                         embed=create_custom_embed(
-                            embed_message="You didn't use `%ARTICLE%` in the url.",
+                            embed_message="You didn't use `%ARTICLE%` in the Default URL.",
                             user=ctx.author,
                             colour=Colour.dark_red()
                         )
@@ -66,7 +74,7 @@ async def manage_request(ctx, *args, client):
                 elif set_process == ReturnCodes.NO_CHANGES:
                     await ctx.send(
                         embed=create_custom_embed(
-                            embed_message="There are no changes in the url.",
+                            embed_message="There are no changes in the Default URL.",
                             user=ctx.author,
                             colour=Colour.dark_red()
                         )
@@ -92,7 +100,7 @@ async def manage_request(ctx, *args, client):
                 embed_title=
                 "Confirmation",
                 embed_message=
-                "You are about to clear your default url.\n"
+                "You are about to clear your Default URL.\n"
                 "Do you want to continue?",
                 user=ctx.author,
                 colour=Colour.blue()
@@ -108,7 +116,7 @@ async def manage_request(ctx, *args, client):
                 await ctx.send(
                     embed=create_custom_embed(
                         embed_title="Success",
-                        embed_message=f"Your default url has been successfully reset.",
+                        embed_message=f"Your Default URL has been successfully reset.",
                         user=ctx.author,
                         colour=Colour.dark_green()
                     )
@@ -117,7 +125,7 @@ async def manage_request(ctx, *args, client):
             elif clear_process == ReturnCodes.NOT_FOUND:
                 await ctx.send(
                     embed=create_custom_embed(
-                        embed_message="You have no default url.",
+                        embed_message="You have no Default URL.",
                         user=ctx.author,
                         colour=Colour.dark_red()
                     )
