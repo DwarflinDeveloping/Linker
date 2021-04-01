@@ -5,21 +5,56 @@ async def manage_request(ctx, *args, client):
 
         get_family_process = get_family(ctx.guild.id)
         if get_family_process == ReturnCodes.NOT_FOUND:
-            await ctx.send("This guild has no default url.")
+            from embeds import create_custom_embed
+            from discord import Colour
+            await ctx.send(
+                embed=create_custom_embed(
+                    embed_message=f"This guild has no Default URL.",
+                    user=ctx.author,
+                    colour=Colour.dark_red()
+                )
+            )
         else:
-            await ctx.send(f"The default url of this guild is:```{get_family_process}```")
+            from embeds import create_custom_embed
+            from discord import Colour
+            await ctx.send(
+                embed=create_custom_embed(
+                    embed_title="Default URL",
+                    embed_message=f"The Default URL of this guild is```{get_family_process}```",
+                    user=ctx.author,
+                    colour=Colour.blue()
+                )
+            )
     elif not ctx.channel.permissions_for(ctx.author).manage_messages:
-        await ctx.send("You are not permitted to do that!")
+        from embeds import create_custom_embed
+        from discord import Colour
+        await ctx.send(
+            embed=create_custom_embed(
+                embed_message=f"You are not permitted to change the guilds Default URL!",
+                user=ctx.author,
+                colour=Colour.dark_red()
+            )
+        )
         return
     elif args[0] == "set":
         if len(args) != 2:
-            await ctx.send("Wrong use! Please use this:"
-                           "```!guildfamily set <url>```")
+            from commands.help import send_userfamily_help
+            await send_userfamily_help(ctx, *args)
         else:
             from utils import get_confirmation, ReturnCodes
-
-            confirmation_message = await ctx.send("You are about to change the url of this guild.\n"
-                                                  "Do you want to continue?")
+            from embeds import create_custom_embed
+            from discord import Colour
+            confirmation_message = await ctx.send(
+                embed=create_custom_embed(
+                    embed_title=
+                    "Confirmation",
+                    embed_message=
+                    "You are about to change the url of this guild.\n"
+                    "Do you want to continue?",
+                    user=ctx.author,
+                    colour=Colour.blue()
+                )
+            )
 
             confirmation = await get_confirmation(confirmation_message, ctx.author, client)
 
@@ -27,30 +62,58 @@ async def manage_request(ctx, *args, client):
                 set_process = set_family(ctx.guild.id, args[1])
                 if set_process == ReturnCodes.SUCCESS:
                     guild_family_file = open(f"data/guild_familys/{ctx.guild.id}.txt", "r")
-                    family = guild_family_file.read()
-                    guild_family_file.close()
-                    await ctx.send(f"The default URL of the guild has been changed to```{family}```")
-                elif set_process == ReturnCodes.OTHER_ERROR:
-                    await ctx.send("An unknown error has occurred.\n"
-                                   "If that happens every time, contact our support.")
-                elif set_process == ReturnCodes.VARIABLE_INVAILED:
-                    await ctx.send("You didn't use `%ARTICLE%` in the url.")
-                elif set_process == ReturnCodes.NO_CHANGES:
-                    await ctx.send("There are no changes in the url.")
-            elif confirmation == ReturnCodes.CANCELLED:
-                await ctx.send("The process was successfully cancelled.")
 
-            elif confirmation == ReturnCodes.TIMEOUT_ERROR:
-                await confirmation.delete()
+                    await ctx.send(
+                        embed=create_custom_embed(
+                            embed_title="Success",
+                            embed_message=f"The Default URL of the guild has been changed to```{guild_family_file.read()}```",
+                            user=ctx.author,
+                            colour=Colour.dark_green()
+                        )
+                    )
+
+                    guild_family_file.close()
+
+                elif set_process == ReturnCodes.OTHER_ERROR:
+                    from embeds import handle_error
+                    await ctx.send(embed=handle_error(confirmation, ctx.author))
+                elif set_process == ReturnCodes.VARIABLE_INVAILED:
+                    await ctx.send(
+                        embed=create_custom_embed(
+                            embed_message="You didn't use `%ARTICLE%` in the url.",
+                            user=ctx.author,
+                            colour=Colour.dark_red()
+                        )
+                    )
+                elif set_process == ReturnCodes.NO_CHANGES:
+                    await ctx.send(
+                        embed=create_custom_embed(
+                            embed_message="There are no changes in the url.",
+                            user=ctx.author,
+                            colour=Colour.dark_red()
+                        )
+                    )
+            elif confirmation == ReturnCodes.CANCELLED or confirmation == ReturnCodes.TIMEOUT_ERROR:
+                await confirmation_message.delete()
 
             elif confirmation == ReturnCodes.OTHER_ERROR:
-                await ctx.send("An unknown error has occurred.\n"
-                               "If that happens every time, contact our support.")
+                from embeds import handle_error
+                await ctx.send(embed=handle_error(confirmation, ctx.author))
     elif args[0] == "clear" or args[0] == "delete":
         from utils import get_confirmation, ReturnCodes
-
-        confirmation_message = await ctx.send("You are about to clear the url of this guild.\n"
-                                              "Do you want to continue?")
+        from embeds import create_custom_embed
+        from discord import Colour
+        confirmation_message = await ctx.send(
+            embed=create_custom_embed(
+                embed_title=
+                "Confirmation",
+                embed_message=
+                "You are about to clear the guilds Default URL.\n"
+                "Do you want to continue?",
+                user=ctx.author,
+                colour=Colour.blue()
+            )
+        )
 
         confirmation = await get_confirmation(confirmation_message, ctx.author, client)
 
@@ -58,20 +121,30 @@ async def manage_request(ctx, *args, client):
             clear_process = clear_family(ctx.guild.id)
 
             if clear_process == ReturnCodes.SUCCESS:
-                await ctx.send("The url of this guild has been successfully reset.")
+                await ctx.send(
+                    embed=create_custom_embed(
+                        embed_title="Success",
+                        embed_message="The Default URL of this guild has been successfully reset.",
+                        user=ctx.author,
+                        colour=Colour.dark_green()
+                    )
+                )
 
             elif clear_process == ReturnCodes.NOT_FOUND:
-                await ctx.send("This guild has no default url.")
+                await ctx.send(
+                    embed=create_custom_embed(
+                        embed_message="This guild has no Default URL.",
+                        user=ctx.author,
+                        colour=Colour.dark_red()
+                    )
+                )
 
-        elif confirmation == ReturnCodes.CANCELLED:
-            await ctx.send("The process was successfully cancelled.")
-
-        elif confirmation == ReturnCodes.TIMEOUT_ERROR:
-            await confirmation.delete()
+        elif confirmation == ReturnCodes.CANCELLED or ReturnCodes.TIMEOUT_ERROR:
+            await confirmation_message
 
         elif confirmation == ReturnCodes.OTHER_ERROR:
-            await ctx.send("An unknown error has occurred.\n"
-                           "If that happens every time, contact our support.")
+            from embeds import handle_error
+            await ctx.send(embed=handle_error(confirmation, ctx.author))
 
 
 def set_family(guild_id, family_url):
