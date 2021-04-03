@@ -10,12 +10,10 @@ bot.help_command = None
 @bot.listen("on_raw_reaction_add")
 async def delete_awnser(payload):
     if payload.emoji.name != "🗑️️":
-        print(f"{payload.emoji.name} != 🗑️")
         return
     guild = discord.utils.get(bot.guilds, id=payload.guild_id)
     channel = discord.utils.get(await guild.fetch_channels(), id=payload.channel_id)
     message = channel.fetch_message(payload.message_id)
-    print(f"{message.author.id} != {bot.user.id}")
     if message.author.id != bot.user.id:
         return
     await message.edit("This message will be deleted in 5 seconds. To cancel this process, react with a \"❌\".")
