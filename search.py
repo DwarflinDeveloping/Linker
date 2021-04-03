@@ -2,7 +2,6 @@ def manage_search(message):
     import re
     links = ""
     items = re.findall("\\{[^\\}]*\\}", message.content)
-    print(items)
     searches = []
     for item in items:
         item = re.sub('[\\{\\}]', '', item)
