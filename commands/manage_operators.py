@@ -68,7 +68,7 @@ async def manage_request(ctx, *args, client):
                 await ctx.send(
                     embed=create_custom_embed(
                         embed_title="Successfully completed",
-                        embed_message="The system operators succesfully cleared.",
+                        embed_message="The system operators have been succesfully cleared.",
                         user=ctx.author,
                         colour=Colour.green()
                     )
@@ -115,7 +115,7 @@ async def manage_request(ctx, *args, client):
                 await ctx.send(
                     embed=create_custom_embed(
                         embed_title="Successfully completed",
-                        embed_message=f"Operator rights successfully removed from `{args[1]}`.",
+                        embed_message=f"Operator rights successfully removed from user `{args[1]}`.",
                         user=ctx.author,
                         colour=Colour.green()
                     )
@@ -164,7 +164,7 @@ async def manage_request(ctx, *args, client):
             await ctx.send(
                 embed=create_custom_embed(
                     embed_title="Successfully completed",
-                    embed_message=f"Operator rights successfully added to `{args[1]}`.",
+                    embed_message=f"Operator rights successfully added to user `{args[1]}`.",
                     user=ctx.author,
                     colour=Colour.green()
                 )
@@ -174,7 +174,7 @@ async def manage_request(ctx, *args, client):
             from discord import Colour
             await ctx.send(
                 embed=create_custom_embed(
-                    embed_message=f"This user allready has operator rights.",
+                    embed_message=f"The user `{args[1]}` allready has operator rights.",
                     user=ctx.author,
                     colour=Colour.dark_red()
                 )
