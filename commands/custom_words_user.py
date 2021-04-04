@@ -1,8 +1,8 @@
-async def manage_request(ctx, *args):
+async def manage_request(ctx, *args, client):
     args = [arg.lower() for arg in args]
     if len(args) == 0:
         from commands.help import send_userwords_help
-        await send_userwords_help(ctx, *args)
+        await send_userwords_help(ctx)
 
     elif args[0] == "list" or args[0] == "get":
         get_process = get_custom_words(ctx.author.id)
@@ -34,56 +34,120 @@ async def manage_request(ctx, *args):
             )
 
     elif args[0] == "clear":
-        clear_process = clear_custom_words(ctx.author.id)
-        from utils import ReturnCodes
-        if clear_process == ReturnCodes.NOT_FOUND:
-            from embeds import create_custom_embed
-            from discord import Colour
-            await ctx.send(
-                embed=create_custom_embed(
-                    embed_message=f"You have no custom words.",
-                    user=ctx.author,
-                    colour=Colour.dark_red()
-                )
+        from embeds import create_custom_embed
+        from discord import Colour
+        from utils import ReturnCodes, get_confirmation
+        confirmation_message = await ctx.send(
+            embed=create_custom_embed(
+                embed_title=
+                "Confirmation",
+                embed_message=
+                "You are about to change the url of this guild.\n"
+                "Do you want to continue?",
+                user=ctx.author,
+                colour=Colour.blue()
             )
-        elif clear_process == ReturnCodes.OTHER_ERROR:
+        )
+        confirmation = await get_confirmation(confirmation_message, ctx.author, client)
+
+        if confirmation == ReturnCodes.SUCCESS:
+            clear_process = clear_custom_words(ctx.guild.id)
+            if clear_process == ReturnCodes.NOT_FOUND:
+                from embeds import create_custom_embed
+                await ctx.send(embed=create_custom_embed("This guild has no custom words.", ctx.author))
+            elif clear_process == ReturnCodes.OTHER_ERROR:
+                from embeds import handle_error
+                await ctx.send(embed=handle_error(ReturnCodes.OTHER_ERROR, ctx.author))
+            elif clear_process == ReturnCodes.SUCCESS:
+                clear_process = clear_custom_words(ctx.author.id)
+                from utils import ReturnCodes
+                if clear_process == ReturnCodes.NOT_FOUND:
+                    from embeds import create_custom_embed
+                    from discord import Colour
+                    await ctx.send(
+                        embed=create_custom_embed(
+                            embed_message=f"This guild has no custom words.",
+                            user=ctx.author,
+                            colour=Colour.dark_red()
+                        )
+                    )
+                elif clear_process == ReturnCodes.OTHER_ERROR:
+                    from embeds import handle_error
+                    await ctx.send(embed=handle_error(clear_process, ctx.author))
+                elif clear_process == ReturnCodes.SUCCESS:
+                    from embeds import create_custom_embed
+                    from discord import Colour
+                    await ctx.send(
+                        embed=create_custom_embed(
+                            embed_title="Sucess",
+                            embed_message=f"The guilds custom words successfully cleared.",
+                            user=ctx.author,
+                            colour=Colour.dark_green()
+                        )
+                    )
+        elif confirmation == ReturnCodes.CANCELLED:
+            await confirmation_message.delete()
+
+        elif confirmation == ReturnCodes.TIMEOUT_ERROR:
+            await confirmation_message.delete()
+
+        elif confirmation == ReturnCodes.OTHER_ERROR:
             from embeds import handle_error
-            await ctx.send(embed=handle_error(clear_process, ctx.author))
-        elif clear_process == ReturnCodes.SUCCESS:
-            from embeds import create_custom_embed
-            from discord import Colour
-            await ctx.send(
-                embed=create_custom_embed(
-                    embed_title="Sucess",
-                    embed_message=f"Your custom words successfully cleared.",
-                    user=ctx.author,
-                    colour=Colour.dark_green()
-                )
-            )
+            await ctx.send(handle_error(confirmation, ctx.author))
+
     elif args[0] == "remove" or args[0] == "rem":
-        add_process = remove_custom_word(ctx.author.id, args[1])
-        from utils import ReturnCodes
-        if add_process == ReturnCodes.SUCCESS:
-            from embeds import create_custom_embed
-            from discord import Colour
-            await ctx.send(
-                embed=create_custom_embed(
-                    embed_title="Sucess",
-                    embed_message=f"The word `{args[1]}` was successfully removed.",
-                    user=ctx.author,
-                    colour=Colour.dark_green()
-                )
+        from utils import ReturnCodes, get_confirmation
+        from embeds import create_custom_embed
+        from discord import Colour
+
+        confirmation_message = await ctx.send(
+            embed=create_custom_embed(
+                embed_title=
+                "Confirmation",
+                embed_message=
+                "You are about to change the url of this guild.\n"
+                "Do you want to continue?",
+                user=ctx.author,
+                colour=Colour.blue()
             )
-        elif add_process == ReturnCodes.NOT_FOUND:
-            from embeds import create_custom_embed
-            from discord import Colour
-            await ctx.send(
-                embed=create_custom_embed(
-                    embed_message="You don't have this custom word.",
-                    user=ctx.author,
-                    colour=Colour.dark_red()
+        )
+
+        confirmation = await get_confirmation(confirmation_message, ctx.author, client)
+
+        if confirmation == ReturnCodes.SUCCESS:
+            remove_process = remove_custom_word(ctx.author.id, args[1])
+            from utils import ReturnCodes
+            if remove_process == ReturnCodes.SUCCESS:
+                from embeds import create_custom_embed
+                from discord import Colour
+                await ctx.send(
+                    embed=create_custom_embed(
+                        embed_title="Sucess",
+                        embed_message=f"The word `{args[1]}` was successfully removed.",
+                        user=ctx.author,
+                        colour=Colour.dark_green()
+                    )
                 )
-            )
+            elif remove_process == ReturnCodes.NOT_FOUND:
+                from embeds import create_custom_embed
+                from discord import Colour
+                await ctx.send(
+                    embed=create_custom_embed(
+                        embed_message="You don't have this custom word.",
+                        user=ctx.author,
+                        colour=Colour.dark_red()
+                    )
+                )
+
+        elif confirmation == ReturnCodes.CANCELLED:
+            await confirmation_message.delete()
+
+        elif confirmation == ReturnCodes.TIMEOUT_ERROR:
+            await confirmation_message.delete()
+
+        elif confirmation == ReturnCodes.OTHER_ERROR:
+            from embeds import handle_error
+            await ctx.send(embed=handle_error(confirmation, ctx.author))
 
     elif args[0] == "add":
         add_process = create_custom_word(ctx.author.id, args[1], args[2])
@@ -99,10 +163,20 @@ async def manage_request(ctx, *args):
                     colour=Colour.dark_green()
                 )
             )
+        if add_process == ReturnCodes.NO_CHANGES:
+            from embeds import create_custom_embed
+            from discord import Colour
+            await ctx.send(
+                embed=create_custom_embed(
+                    embed_message=f"The word `{args[1]}` is allready set to `{args[2]}`.",
+                    user=ctx.author,
+                    colour=Colour.dark_red()
+                )
+            )
 
     else:
         from commands.help import send_userwords_help
-        await send_userwords_help(ctx, *args)
+        await send_userwords_help(ctx)
 
 
 def create_custom_word(user_id, custom_word, url):
@@ -113,6 +187,8 @@ def create_custom_word(user_id, custom_word, url):
     if os.path.isfile(f"data/custom_words/users/{user_id}.json"):
         with open(f"data/custom_words/users/{user_id}.json", "r") as json_file:
             custom_words = json.load(json_file)
+        if custom_word in custom_words and custom_words[custom_word] == url:
+            return ReturnCodes.NO_CHANGES
         custom_words[custom_word] = url
         json_file.close()
     else:
