@@ -2,7 +2,7 @@ async def manage_request(ctx, *args, client):
     args = [arg.lower() for arg in args]
     if len(args) == 0:
         from commands.help import send_userfamily_help
-        await send_userfamily_help(ctx, *args)
+        await send_userfamily_help(ctx)
         return
 
     if args[0] == "get" or args[0] == "query":
@@ -34,7 +34,7 @@ async def manage_request(ctx, *args, client):
     elif args[0] == "set":
         if len(args) != 2:
             from commands.help import send_userfamily_help
-            await send_userfamily_help(ctx, *args)
+            await send_userfamily_help(ctx)
         else:
             from utils import get_confirmation, ReturnCodes
             from embeds import create_custom_embed
@@ -55,14 +55,16 @@ async def manage_request(ctx, *args, client):
             if confirmation == ReturnCodes.SUCCESS:
                 set_process = set_family(ctx.author.id, args[1])
                 if set_process == ReturnCodes.SUCCESS:
+                    user_family_file = open(f"data/guild_familys/{ctx.guild.id}.txt", "r")
                     await ctx.send(
                         embed=create_custom_embed(
                             embed_title="Success",
-                            embed_message=f"Your Default URL has been changed to```{args[1]}```",
+                            embed_message=f"Your Default URL has been changed to```{user_family_file.read()}```",
                             user=ctx.author,
                             colour=Colour.dark_green()
                         )
                     )
+                    user_family_file.close()
                 elif set_process == ReturnCodes.VARIABLE_INVAILED:
                     await ctx.send(
                         embed=create_custom_embed(
@@ -139,7 +141,7 @@ async def manage_request(ctx, *args, client):
             await ctx.send(embed=handle_error(confirmation, ctx.author))
     else:
         from commands.help import send_userfamily_help
-        await send_userfamily_help(ctx, *args)
+        await send_userfamily_help(ctx)
 
 
 def set_family(user_id, family_url):
