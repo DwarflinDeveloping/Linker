@@ -1,2 +1,1 @@
-author = "DwarfDev"
-license = "MIT"
+
