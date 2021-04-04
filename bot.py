@@ -53,11 +53,18 @@ async def send_link(message):
     if "{" not in message.content or message.author.bot:
         return
     from search import manage_search
-    link_content = manage_search(message)
-    if len(link_content) > 2000:
+    links = manage_search(message)
+    if len(links[0]) > 2000:
         await message.channel.send("You included too many links in this message!")
         return
-    await message.channel.send(link_content)
+    if links[1] is True:
+        await message.channel.send(
+            links[0] +
+            "\nYou have not yet set a default URL!\n"
+            "For help, type `%help default url`."
+        )
+    else:
+        await message.channel.send(links[0])
 
 
 @bot.command()
@@ -69,15 +76,6 @@ async def help(ctx, *args):
     await help.manage_request(ctx, *args)
 
 
-@bot.command()
-async def admin(ctx, *args):
-    from commands.admincmds import paused
-    if paused:
-        return
-    from commands.admincmds import manage_request
-    await manage_request(ctx, *args)
-
-
 @bot.event
 async def on_ready():
     await bot.change_presence(
@@ -87,18 +85,6 @@ async def on_ready():
         )
     )
     print("Logged on as", bot.user)
-
-    from commands.admincmds import operators, administrators
-    user_rights_file = open("data/rights.json")
-    import json
-    user_rights_json = json.loads(user_rights_file.read())
-    user_rights_file.close()
-    user_rights = user_rights_json.keys()
-    operators = []
-    for user in user_rights:
-        if user_rights[user] == "operator":
-            operators += user
-    global operators
 
 
 @bot.command()
