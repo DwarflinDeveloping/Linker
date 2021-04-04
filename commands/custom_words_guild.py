@@ -2,7 +2,7 @@ async def manage_request(ctx, *args, client):
     args = [arg.lower() for arg in args]
     if len(args) == 0:
         from commands.help import send_guildwords_help
-        await send_guildwords_help(ctx, *args)
+        await send_guildwords_help(ctx)
 
     elif args[0] == "list" or args[0] == "get":
         get_process = get_custom_words_by_guild(ctx.guild.id)
@@ -33,10 +33,20 @@ async def manage_request(ctx, *args, client):
             )
 
     elif args[0] == "clear":
+        from embeds import create_custom_embed
+        from discord import Colour
         from utils import ReturnCodes, get_confirmation
-        confirmation_message = await ctx.send("You are about to change the url of this guild.\n"
-                                              "Do you want to continue?")
-
+        confirmation_message = await ctx.send(
+            embed=create_custom_embed(
+                embed_title=
+                "Confirmation",
+                embed_message=
+                "You are about to change the url of this guild.\n"
+                "Do you want to continue?",
+                user=ctx.author,
+                colour=Colour.blue()
+            )
+        )
         confirmation = await get_confirmation(confirmation_message, ctx.author, client)
 
         if confirmation == ReturnCodes.SUCCESS:
@@ -68,14 +78,15 @@ async def manage_request(ctx, *args, client):
             from embeds import handle_error
             await ctx.send(handle_error(confirmation, ctx.author))
 
-    elif args[0] == "remove":
+    elif args[0] == "remove" or args[0] == "rem":
         from utils import ReturnCodes, get_confirmation
         from embeds import create_custom_embed
         from discord import Colour
 
         confirmation_message = await ctx.send(
             embed=create_custom_embed(
-                embed_title="Confirmation",
+                embed_title=
+                "Confirmation",
                 embed_message=
                 "You are about to change the url of this guild.\n"
                 "Do you want to continue?",
@@ -105,10 +116,9 @@ async def manage_request(ctx, *args, client):
                 from discord import Colour
                 await ctx.send(
                     embed=create_custom_embed(
-                        embed_title="Successfully completed",
                         embed_message="This guild doesn't has this custom word.",
                         user=ctx.author,
-                        colour=Colour.green()
+                        colour=Colour.dark_red()
                     )
                 )
 
@@ -131,15 +141,25 @@ async def manage_request(ctx, *args, client):
             await ctx.send(
                 embed=create_custom_embed(
                     embed_title="Successfully completed",
-                    embed_message=f"The word `{args[1]}` was successfully set to the url `{args[2]}`",
+                    embed_message=f"The word `{args[1]}` was successfully set to the url `{args[2]}`.",
                     user=ctx.author,
                     colour=Colour.green()
+                )
+            )
+        if add_process == ReturnCodes.NO_CHANGES:
+            from embeds import create_custom_embed
+            from discord import Colour
+            await ctx.send(
+                embed=create_custom_embed(
+                    embed_message=f"The word `{args[1]}` is allready set to `{args[2]}`.",
+                    user=ctx.author,
+                    colour=Colour.dark_red()
                 )
             )
 
     else:
         from commands.help import send_guildwords_help
-        await send_guildwords_help(ctx, *args)
+        await send_guildwords_help(ctx)
 
 
 def create_custom_guild_word(guild_id, custom_word, url):
@@ -150,6 +170,8 @@ def create_custom_guild_word(guild_id, custom_word, url):
     if os.path.isfile(f"data/custom_words/guilds/{guild_id}.json"):
         with open(f"data/custom_words/guilds/{guild_id}.json", "r") as json_file:
             custom_words = json.load(json_file)
+        if custom_word in custom_words and custom_words[custom_word] == url:
+            return ReturnCodes.NO_CHANGES
         custom_words[custom_word] = url
         json_file.close()
     else:
