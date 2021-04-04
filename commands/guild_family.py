@@ -1,6 +1,10 @@
 async def manage_request(ctx, *args, client):
     args = [arg.lower() for arg in args]
-    if args[0] == "get" or args[0] == "query":
+    if len(args) == 0:
+        from commands.help import send_guildfamily_help
+        await send_guildfamily_help(ctx)
+        return
+    elif args[0] == "get" or args[0] == "query":
         from utils import ReturnCodes
 
         get_family_process = get_family(ctx.guild.id)
@@ -39,7 +43,7 @@ async def manage_request(ctx, *args, client):
     elif args[0] == "set":
         if len(args) != 2:
             from commands.help import send_userfamily_help
-            await send_userfamily_help(ctx, *args)
+            await send_userfamily_help(ctx)
         else:
             from utils import get_confirmation, ReturnCodes
             from embeds import create_custom_embed
@@ -198,3 +202,4 @@ def get_family(guild_id):
         return guild_family
     else:
         return ReturnCodes.NOT_FOUND
+
