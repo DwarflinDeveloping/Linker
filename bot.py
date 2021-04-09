@@ -9,6 +9,18 @@ bot = cmds.Bot(command_prefix="%", intents=discord.Intents.all())
 bot.help_command = None
 
 
+def make_directories():
+    from os.path import isdir
+    if not isdir("data"):
+        os.mkdir("data")
+    if not isdir("data/custom_words"):
+        os.mkdir("data/custom_words")
+    if not isdir("data/guild_familys"):
+        os.mkdir("data/guild_familys")
+    if not isdir("data/user_familys"):
+        os.mkdir("data/user_familys")
+
+
 @bot.listen("on_raw_reaction_add")
 async def delete_awnser(payload):
     from commands.admincmds import paused
@@ -151,5 +163,7 @@ async def pause(ctx):
     from commands.admincmds import pause
     await pause(ctx, bot)
 
+
+make_directories()
 
 bot.run(os.getenv("TOKEN"))
