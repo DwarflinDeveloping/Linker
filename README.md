@@ -1,4 +1,4 @@
-.In other languages: [Deutsch](https://gist.github.com/DwarflinDeveloping/3dd8f1a76e0c99f61179dab993728a0b)
+In other languages: [Deutsch](https://gist.github.com/DwarflinDeveloping/3dd8f1a76e0c99f61179dab993728a0b)
 
 # About Linker
 Linker is a bot programmed in [Python](https://www.python.org/) which makes it possible to send links in a very short time.
