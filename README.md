@@ -1,3 +1,5 @@
+**This project is currently NOT under development! Core features may be corrupted or missing! We are currently not providing any support on this software!**
+
 In other languages: [Deutsch](https://gist.github.com/DwarflinDeveloping/3dd8f1a76e0c99f61179dab993728a0b)
 
 # About Linker
